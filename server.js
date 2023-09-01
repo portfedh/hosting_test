@@ -142,7 +142,7 @@ MongoClient.connect(connectionString, { useUnifiedTopology: true })
     // })
     // Production version:
     const isProduction = process.env.NODE_ENV === 'production'
-    const port = isProduction ? 7500 : 3000
+    const port = isProduction ? 7500 : 8000
     app.listen(port, function () {
       console.log(`listening on ${port}`)
     })
