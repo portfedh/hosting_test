@@ -137,15 +137,15 @@ MongoClient.connect(connectionString, { useUnifiedTopology: true })
     // Server Listen:
     // ========================
     // Port for the server to listen:
-    // app.listen(3000, function () {
-    //   console.log('listening on 3000')
-    // })
-    // Production version:
-    const isProduction = process.env.NODE_ENV === 'production'
-    const port = isProduction ? 7500 : 8000
-    app.listen(port, function () {
-      console.log(`listening on ${port}`)
+    app.listen(8000, function () {
+      console.log('listening on 8000')
     })
+    // Production version:
+    // const isProduction = process.env.NODE_ENV === 'production'
+    // const port = isProduction ? 7500 : 8000
+    // app.listen(port, function () {
+    //   console.log(`listening on ${port}`)
+    // })
     
   })
   // Error handling
