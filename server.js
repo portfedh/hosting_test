@@ -1,123 +1,62 @@
-// Imports
-// *******
-const http = require('http');
-const fs = require('fs')
-const url = require('url');
-const querystring = require('querystring');
-const figlet = require('figlet')
+const express = require('express')
+const app = express()
+const cors = require('cors')
+const PORT = 8000
 
-// Run Server
-// **********
-const server = http.createServer((req, res) => {
+app.use(cors())
 
-  // Functions:
-  // **********
-    // Render page:
-      function renderPage(pageName, contentType){
-        fs.readFile(pageName, function(err, data) {
-          res.writeHead(200, {'Content-Type': contentType});
-          res.write(data);
-          res.end();
-        })
-      }
-    // Page not found:
-      function render404(){
-        figlet('404!!', function(err, data) {
-          if (err) {
-              console.log('Something went wrong...');
-              console.dir(err);
-              return;
-          }
-          res.write(data);
-          res.end();
-        });
-      }
-    // Serve CSS:
-      function serveCSS(){
-        fs.readFile('css/style.css', function(err, data) {
-          res.write(data);
-          res.end();
-        });
-      }
-    // Serve JS:
-      function serveJs(){
-        fs.readFile('js/main.js', function(err, data) {
-          res.writeHead(200, {'Content-Type': 'text/javascript'});
-          res.write(data);
-          res.end();
-        });
-      }
-    // ServeAPI:
-      function serveAPI(){
-        if(params['student'] == 'leon'){
-          res.writeHead(200, {'Content-Type': 'application/json'});
-          const objToJson = {
-            name: "leon",
-            status: "Boss Man",
-            currentOccupation: "Baller"
-          }
-          res.end(JSON.stringify(objToJson));
-        }
-        else {
-          res.writeHead(200, {'Content-Type': 'application/json'});
-          const objToJson = {
-            name: "unknown",
-            status: "unknown",
-            currentOccupation: "unknown"
-          }
-          res.end(JSON.stringify(objToJson));
-        }
-      }
-  
-  // Variables
-  // *********
-    // Save requested url as variable:
-      const page = url.parse(req.url).pathname;
-        console.log(`The requested url is: "${page}"`);
+let rappers = {
+    '21 savage': {
+        'age': 28,
+        'birthName': 'Shéyaa Bin Abraham-Joseph',
+        'birthdate': '22 October 1992', 
+        'birthLocation': 'London, England',
+        'origin': 'Atlanta, Georgia',
+        'genre': 'hip hop, trap, rap, horrorcore',
+        'occupation': 'rapper, songwriter, record producer',
+        'yearsActive': '2013-present',
+        'labels': 'Epic, Slaughter Gang',
+        'children': 3
+    },
+    'chance the rapper':{
+        'age': 28,
+        'birthName': 'Chancelor Jonathan Bennett',
+        'birthdate': 'April 16, 1993', 
+        'birthLocation': 'London, England',
+        'origin': 'Chicago, Illinois',
+        'genre': 'hip hop, alternative hip hop, r & b',
+        'occupation': 'rapper, singer, song writer, record producer, activist, actor, philanthropist',
+        'yearsActive': '2011-present',
+        'labels': 'none',
+        'children': 0
+    },
+    'unknown':{
+        'age': 'unknown',
+        'birthName': 'unknown',
+        'birthdate': 'unknown', 
+        'birthLocation': 'unknown',
+        'origin': 'unknown',
+        'genre': 'unknown',
+        'occupation': 'unknown',
+        'yearsActive': 'unknown',
+        'labels': 'unknown',
+        'children': 'unknown'
+    }
+}
 
-    // Save any additional query parameters as a variable:
-      // Parameters are when the url has info attached in the url after '?'. 
-      // For example: /api?student=${userName}
-      // Here student is the query parameter.
-      const params = querystring.parse(url.parse(req.url).query);
-        console.log(`The params are: `)
-        console.log(params)
+app.get('/', (request, response) => {
+    response.sendFile(__dirname + '/index.html')
+})
 
-  // Page controller
-  // ***************
-    switch(page){
-      
-      // Page loading
-      case '/css/style.css':
-        serveCSS();
-        break;
-
-      case '/js/main.js':
-        serveJs();
-        break;
-
-      // User requests
-      case '/':
-        renderPage('index.html', 'text/html');
-        break;
-
-      case '/otherpage':
-        renderPage('otherpage.html', 'text/html');
-        break;
-
-      case '/otherotherpage':
-        renderPage('otherotherpage.html', 'text/html');
-        break;
-
-      case '/api':
-        serveAPI();
-        break;
-
-      // 404
-      default:
-        render404();
+app.get('/api/:name', (request, response) => {
+    const rapperName = request.params.name.toLowerCase()
+    if(rappers[rapperName]){
+        response.json(rappers[rapperName])
+    }else{
+        response.json(rappers['unknown'])
     }
 })
 
-// Port to listen for requests:
-server.listen(8000);
+app.listen(process.env.PORT || PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+})
