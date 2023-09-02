@@ -1,10 +1,13 @@
-document.querySelector('#tossCoin').addEventListener('click', makeReq)
-let outputParagraph = document.getElementById("result");
+document.querySelector('#clickMe').addEventListener('click', makeReq)
 
 async function makeReq(){
-  console.log('Button clicked, making request')
-  const res = await fetch('/api?tossCoin=true')
+
+  const userName = document.querySelector("#userName").value;
+  const res = await fetch(`/api?student=${userName}`)
   const data = await res.json()
-  outputParagraph.innerHTML = data.Coinflip;
-  console.log(data)
+
+  console.log(data);
+  document.querySelector("#personName").textContent = data.name
+  document.querySelector("#personStatus").textContent = data.status
+  document.querySelector("#personOccupation").textContent = data.currentOccupation
 }

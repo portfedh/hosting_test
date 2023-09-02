@@ -12,7 +12,6 @@ const server = http.createServer((req, res) => {
 
   // Functions:
   // **********
-
     // Render page:
       function renderPage(pageName, contentType){
         fs.readFile(pageName, function(err, data) {
@@ -50,16 +49,21 @@ const server = http.createServer((req, res) => {
       }
     // ServeAPI:
       function serveAPI(){
-        let coinFlipResult 
-        if(params['tossCoin'] == 'true'){
-          if(Math.random() < 0.5){
-            coinFlipResult = "Heads"
-          } else{
-            coinFlipResult = "Tails"
-          }
+        if(params['student'] == 'leon'){
           res.writeHead(200, {'Content-Type': 'application/json'});
           const objToJson = {
-            Coinflip: coinFlipResult,
+            name: "leon",
+            status: "Boss Man",
+            currentOccupation: "Baller"
+          }
+          res.end(JSON.stringify(objToJson));
+        }
+        else {
+          res.writeHead(200, {'Content-Type': 'application/json'});
+          const objToJson = {
+            name: "unknown",
+            status: "unknown",
+            currentOccupation: "unknown"
           }
           res.end(JSON.stringify(objToJson));
         }
@@ -95,6 +99,14 @@ const server = http.createServer((req, res) => {
       // User requests
       case '/':
         renderPage('index.html', 'text/html');
+        break;
+
+      case '/otherpage':
+        renderPage('otherpage.html', 'text/html');
+        break;
+
+      case '/otherotherpage':
+        renderPage('otherotherpage.html', 'text/html');
         break;
 
       case '/api':
