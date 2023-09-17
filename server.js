@@ -1,152 +1,174 @@
+console.log("server.js starting...");
+
 // *************
 // ** Imports **
 // *************
-const express = require('express')
-const app = express()
-const bodyParser = require('body-parser')
-const MongoClient = require('mongodb').MongoClient
+require("dotenv").config();
+const express = require("express");
+const app = express();
+const bodyParser = require("body-parser");
+const MongoClient = require("mongodb").MongoClient;
+const ObjectId = require("mongodb").ObjectId;
+const PORT = 3000;
 
-console.log('server.js starting...')
+// Serve public folder
+app.use(express.static(__dirname + "/public"));
 
-// ******************************
-// ** Connect to MongoDB Atlas **
-// ******************************
+// Connecting to MongoDB:
+// ======================
+let connectionString = process.env.DB_STRING;
 
-// Connection information:
-// =======================
-let connectionString = 'mongodb+srv://yoda:oNEn6lWuO2ADugjM@cluster0.tbcbcmb.mongodb.net/?retryWrites=true&w=majority'
-// Version using environment variables:
-//  @see https://zellwk.com/blog/environment-variables/
-//  require('./dotenv')
-//  Replace process.env.DB_URL with your actual connection string
-//  const connectionString = process.env.DB_URL
-
-// Establishing Connection:
-// =======================
 MongoClient.connect(connectionString, { useUnifiedTopology: true })
-  .then(client => {
+  .then((client) => {
     // ========================
     // Database and table info:
     // ========================
-    // Connection confirmation  message
-    console.log('Connected to Database');
-    // DB name
-    const db = client.db('star-wars-quotes');
-    // Table name (collection name)
-    const quotesCollection = db.collection('quotes');
+    console.log("Connected to Database");
+    const db = client.db("SalsaCandela");
+    const quotesCollection = db.collection("Fiesta1");
 
     // ============================================
-    // Middleware (must come before CRUD Handlers)
+    // Middleware (must come before crud handlers)
     // ============================================
     // Set template engine EJS
-    app.set('view engine', 'ejs')
+    app.set("view engine", "ejs");
     // Makes server able to Read JSON data
-    app.use(bodyParser.json())
+    app.use(bodyParser.json());
     // So express can read data from html elements
-    app.use(bodyParser.urlencoded({ extended: true }))
+    app.use(bodyParser.urlencoded({ extended: true }));
     // Make public folder accessible to the public
-    app.use(express.static('public'))
+    app.use(express.static("public"));
 
-    // ========================
-    // Routes
-    // ========================
-    
-    // READ: Serve Index:
-    // ==================
-    app.get('/', (req, res) => {
+    // =======
+    // Routes:
+    // =======
+
+    // Index:
+    // ======
+    app.get("/", (req, res) => {
+      res.sendFile(__dirname + "/index.html");
+    });
+
+    // Search:
+    // =======
+    app.get("/search", (req, res) => {
+      res.sendFile(__dirname + "/search.html");
+    });
+
+    // Search:
+    // =======
+    app.get("/report", (req, res) => {
       // Gets quotes from database
-      db.collection('quotes').find().toArray()
-        .then(results => {
-          console.log(results)
-          // Rendered page with EJS and database results
-          res.render('index.ejs', { quotes: results })
-          // Alternative: serve index.html
-          // res.sendFile(__dirname + '/index.html')
-          //  What you would use for a static site.
-      })
-        // Error handling
-        .catch(error => console.error(error))
-      })
-
-    // WRITE: Add values to  MongoDB:
-    // ==============================
-    // When server receives POST request from form.
-    app.post('/quotes', (req, res) => {
-      // Insert record into database
-      quotesCollection.insertOne(req.body)
-        .then(result => {
-          // Log what was inserted to server console
-          console.log(result)
-          // Browser expects something back so redirect back to home
-          res.redirect('/')
-        })
-        // Error handling
-        .catch(error => console.error(error))
-    })
-    
-    // UPDATE: Update MongoDB record
-    // =============================
-        // A less complicated process can be done with Mongoose. 
-        // Read tutorial here:
-        // https://zellwk.com/blog/mongoose/
-    // Responds to PUT request from public/main.js
-    app.put('/quotes', (req, res) => {
-      // Method included in MongoDB
-      quotesCollection.findOneAndUpdate(
-        // Query posts written by 'Yoda'
-        { name: 'Yoda' },
-        {
-          // Update operator $set
-          // Other possible are: $inc, $push
-          $set: {
-            name: req.body.name,
-            quote: req.body.quote,
-          },
-        },
-        {
-          // Create quote if no 'Yoda' quote exists
-          // upsert: insert if no documents can be updated
-          upsert: true,
-        })
-      .then(result => {
-        // Console log result in server
-        console.log(result)
-        // Respond with Success JSON Message to client
-        res.json('Success')
-       })
-       // Error Handling
-      .catch(error => console.error(error))
-    })
-
-    // DELETE: De-lay-te MongoDB record
-    // ================================
-    app.delete('/quotes', (req, res) => {
       quotesCollection
-      .deleteOne({ name: req.body.name })
-      //.deleteOne({ name: 'Darth Vader' }, options)
-      .then(result => {
-        if (result.deletedCount === 0) {
-          return res.json('No quote to delete')
+        .find()
+        .toArray()
+        .then((results) => {
+          console.log(results);
+          // Rendered page with EJS and database results
+          res.render("report.ejs", { quotes: results });
+          // res.sendFile(__dirname + "/report.html");
+        })
+        // Error handling
+        .catch((error) => console.error(error));
+    });
+
+    // Add a user
+    // ===========
+    app.post("/inscribir", (req, res) => {
+      // Insert record into database
+      quotesCollection
+        .insertOne(req.body)
+        .then((result) => {
+          // Log what was inserted to server console
+          console.log(result);
+          //Render confirmation page with Id
+          res.render("confirmation.ejs", {
+            idAlumno: result.insertedId.toString(),
+            qrWww:
+              "https://api.qrserver.com/v1/create-qr-code/?data=" +
+              result.insertedId.toString() +
+              "&amp;size=200x200",
+            nombreAlumno: req.body.first_name + " " + req.body.last_name,
+          });
+        })
+        // Error handling
+        .catch((error) => console.error(error));
+    });
+
+    // Search for user:
+    // ================
+    app.post("/search_results", async (req, res) => {
+      // const students = await quotesCollection.find().toArray();
+      try {
+        // Get id from body request
+        var myId = req.body.id_to_search;
+        // Search for id
+        var object_id_to_find = new ObjectId(myId);
+        const students2 = await quotesCollection.findOne({
+          _id: object_id_to_find,
+        });
+        if (!students2) {
+          // No record found:
+          console.log("No student record found.");
+          res.render("search_not_found.ejs", {});
+        } else {
+          // Record found:
+          // Get las date
+          console.log("last login:");
+          console.log(students2.last_loggin);
+          // Get date today
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, "0"); // Adding 1 to month because months are zero-indexed
+          const day = String(today.getDate()).padStart(2, "0");
+          var todayDateString = `${year}-${month}-${day}`;
+          console.log("Todays date:");
+          console.log(todayDateString);
+          // Compare dates
+          if (students2.last_loggin != todayDateString) {
+            // Access granted
+            var accessButton = "welcome";
+            var accessText = "Bienvenido";
+
+            quotesCollection.findOneAndUpdate(
+              // Search by id
+              { _id: object_id_to_find },
+              {
+                // Update operator $set
+                $set: { last_loggin: todayDateString },
+              },
+              { upsert: true }
+            );
+          } else {
+            // Access rejected
+            var accessButton = "alreadyIn";
+            var accessText = "Segundo acceso del dia";
+          }
+
+          res.render("search_results.ejs", {
+            idAlumno: students2._id,
+            firstName: students2.first_name,
+            lastName: students2.last_name,
+            curso: students2.curso,
+            sucursal: students2.sucursal,
+            horario: students2.horario,
+            last_loggin: students2.last_loggin,
+            buttonClass: accessButton,
+            text: accessText,
+          });
         }
-        res.json(`Deleted Darth Vader's quote`)
-      })
-      .catch(error => console.error(error))
-    })
+      } catch (error) {
+        console.error("Error while querying MongoDB:", error);
+        res.status(500).json({ message: "An error occurred." });
+      }
+    });
 
     // ========================
-    // Server Listen:
+    // Server Port:
     // ========================
-    // Port for the server to listen:
-    app.listen(3000, function () {
-      console.log('listening on 3000')
-    })
-    // Production version:
-    // const isProduction = process.env.NODE_ENV === 'production'
-    // const port = isProduction ? 7500 : 3000
-    // app.listen(port, function () {
-    //   console.log(`listening on ${port}`)
-    // })
-    
+    app.listen(process.env.PORT || PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   })
   // Error handling
-  .catch(error => console.error(error))
+  .catch((error) => console.error(error));
