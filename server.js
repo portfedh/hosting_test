@@ -16,7 +16,7 @@ app.use(express.static(__dirname + "/public"));
 
 // Connecting to MongoDB:
 // ======================
-let connectionString = process.env.DB_STRING;
+let connectionString = "mongodb+srv://osorio:sKAzbO35GYkeEsdk@cluster0.hogwabt.mongodb.net/?retryWrites=true&w=majority";
 
 MongoClient.connect(connectionString, { useUnifiedTopology: true })
   .then((client) => {
